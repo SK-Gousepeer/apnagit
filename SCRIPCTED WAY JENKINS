@@ -1,0 +1,27 @@
+node{
+
+def mavenHome = tool name: "maven3.9.6"
+
+stage('CheckOutCode'){
+git branch: 'master', credentialsId: 'e9147b2d-0f15-4887-9b44-6419597e9566', url: 'https://github.com/Gousepeer5426/maven-web-application-1.git'    
+}
+
+stage('Bulid'){
+sh "${mavenHome}/bin/mvn clean package"   
+}
+
+stage('Excute sonarqubeReport'){
+sh "${mavenHome}/bin/mvn clean sonar:sonar"
+}
+
+stage('Upload ArtifcatintoNexus'){
+sh "${mavenHome}/bin/mvn clean deploy"    
+}
+
+stage('Deployappinto Tomcat'){
+sshagent(['ca6ec22e-7473-47df-9047-03b10df2fbf8']) {
+    sh "scp -o StrictHostKeyChecking=no target/maven-web-application.war ec2-user@172.31.9.13:/opt/apache-tomcat-9.0.86/webapps"
+}    
+}
+
+}
